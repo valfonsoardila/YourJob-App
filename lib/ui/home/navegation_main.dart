@@ -23,7 +23,7 @@ class _NavegationMainState extends State<NavegationMain> {
   String concepto = '';
   late FocusScopeNode _focusScopeNode;
   //LISTAS
-  List<int> _selectedIndexList = [0, 1, 2, 3];
+  List<int> _selectedIndexList = [0, 1, 2];
 
   @override
   void initState() {
@@ -46,8 +46,7 @@ class _NavegationMainState extends State<NavegationMain> {
         height: 60.0,
         items: <Widget>[
           Icon(Icons.home, size: 30, color: Colors.white),
-          Icon(Icons.show_chart, size: 30, color: Colors.white),
-          Icon(Icons.attach_money_sharp, size: 30, color: Colors.white),
+          Icon(Icons.assignment, size: 30, color: Colors.white),
           Icon(Icons.settings, size: 30, color: Colors.white),
         ],
         color: Color.fromARGB(255, 72, 143, 202),
@@ -64,12 +63,20 @@ class _NavegationMainState extends State<NavegationMain> {
       ),
       //Estilos del panel superior de la aplicacion
       appBar: AppBar(
+        leading: Container(
+          child: CircleAvatar(
+            radius: 30,
+            backgroundColor: Colors.transparent,
+            backgroundImage: Image.asset('assets/icons/icon.png').image,
+          ),
+        ),
         title: Text(
           'YourJobs App',
           style: TextStyle(
               fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white),
           textAlign: TextAlign.center,
         ),
+        automaticallyImplyLeading: false, // Oculta la flecha de retroceso
         centerTitle: true,
         backgroundColor: Color.fromARGB(255, 72, 143, 202),
         elevation: 0,

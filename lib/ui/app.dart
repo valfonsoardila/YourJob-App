@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yourjobs_app/ui/anim/introSimple_app.dart';
 import 'package:yourjobs_app/ui/auth/login.dart';
-import 'package:yourjobs_app/ui/auth/profile.dart';
 import 'package:yourjobs_app/ui/auth/register.dart';
 import 'package:yourjobs_app/ui/auth/restore.dart';
 import 'package:yourjobs_app/ui/home/navegation_main.dart';
@@ -24,7 +23,6 @@ class App extends StatelessWidget {
         "/login": (context) => Login(),
         "/register": (context) => Register(),
         "/restore": (context) => Restore(),
-        "/profile": (context) => Profile(),
         "/main": (context) => NavegationMain(),
       },
     );
