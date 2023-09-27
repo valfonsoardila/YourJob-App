@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -12,6 +18,76 @@ class _RegisterState extends State<Register> {
   TextEditingController nombre = TextEditingController();
   TextEditingController user = TextEditingController();
   TextEditingController pass = TextEditingController();
+  bool _controllerconectivity = false;
+  void _initConnectivity() async {
+    // Obtiene el estado de la conectividad al inicio
+    final connectivityResult = await Connectivity().checkConnectivity();
+    _updateConnectionStatus(connectivityResult);
+
+    // Escucha los cambios en la conectividad y actualiza el estado en consecuencia
+    Connectivity().onConnectivityChanged.listen((connectivityResult) {
+      _updateConnectionStatus(connectivityResult);
+    });
+  }
+
+  void _updateConnectionStatus(ConnectivityResult connectivityResult) {
+    setState(() {
+      _controllerconectivity = connectivityResult != ConnectivityResult.none;
+    });
+  }
+
+  void registerUser() async {
+    if (nombre.text.isEmpty || user.text.isEmpty || pass.text.isEmpty) {
+      Get.snackbar("Todos los campos son obligatorios",
+          "por favor llene todos los campos",
+          colorText: Colors.white,
+          duration: Duration(seconds: 2),
+          backgroundColor: Color.fromARGB(255, 73, 73, 73));
+    } else {
+      if (_controllerconectivity != false) {
+        var data = {
+          "name": nombre.text,
+          "email": user.text,
+          "password": pass.text,
+        };
+        print(data);
+        var response = await http.post(
+            Uri.parse("http://192.168.100.3:3000/users"),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode(data));
+        var message = jsonDecode(response.body);
+
+        print("mensaje: $message");
+        print("response: ${response.statusCode}");
+        if (message['msg'] != "Validation error") {
+          Get.snackbar("Usuario registrado", "Inicie sesión",
+              colorText: Colors.white,
+              duration: Duration(seconds: 2),
+              backgroundColor: Color.fromARGB(255, 73, 73, 73));
+          Get.toNamed('/login');
+        } else {
+          Get.snackbar(
+              "Ya existe un usuario con ese correo", "Intente de nuevo",
+              colorText: Colors.white,
+              duration: Duration(seconds: 2),
+              backgroundColor: Color.fromARGB(255, 73, 73, 73));
+        }
+      } else {
+        Get.snackbar(
+            "No hay conexión a internet", "por favor conectese a internet",
+            colorText: Colors.white,
+            duration: Duration(seconds: 2),
+            backgroundColor: Color.fromARGB(255, 73, 73, 73));
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initConnectivity();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -138,7 +214,9 @@ class _RegisterState extends State<Register> {
                           backgroundColor: Color.fromARGB(255, 72, 143, 202),
                           child: IconButton(
                             color: Colors.white,
-                            onPressed: () {},
+                            onPressed: () {
+                              registerUser();
+                            },
                             icon: Icon(Icons.arrow_forward),
                           ),
                         ),

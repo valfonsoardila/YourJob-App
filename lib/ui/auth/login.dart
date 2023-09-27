@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
+import 'package:yourjobs_app/ui/views/home_view.dart';
+import 'package:http/http.dart' as http;
+import 'dart:async';
+import 'dart:convert';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -13,8 +17,9 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   TextEditingController user = TextEditingController();
   TextEditingController pass = TextEditingController();
-  bool _isDarkMode = false;
   bool _controllerconectivity = false;
+  bool _isLogin = false;
+
   void _initConnectivity() async {
     // Obtiene el estado de la conectividad al inicio
     final connectivityResult = await Connectivity().checkConnectivity();
@@ -32,17 +37,76 @@ class _LoginState extends State<Login> {
     });
   }
 
-  void guardarDatos() async {
+  Future<void> iniciarSesion() async {
+    if (user.text.isEmpty || pass.text.isEmpty) {
+      Get.snackbar("Todos los campos son obligatorios",
+          "por favor llene todos los campos",
+          colorText: Colors.white,
+          duration: Duration(seconds: 2),
+          backgroundColor: Color.fromARGB(255, 73, 73, 73));
+    } else {
+      if (_controllerconectivity != false) {
+        var data = {
+          "email": user.text,
+          "password": pass.text,
+        };
+        print(data);
+        var response = await http.post(
+            Uri.parse("http://192.168.100.3:3000/auth/login"),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode(data));
+        var message = jsonDecode(response.body);
+        print("mensaje: $message");
+        if (message['message'] != 'Usuario no encontrado' &&
+            message['message'] != 'Contraseña incorrecta') {
+          String token = message['token'];
+          guardarDatos(token);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => HomeView()),
+          );
+        } else {
+          Get.snackbar(
+              "Error al iniciar sesión", "por favor verifique sus credenciales",
+              colorText: Colors.white,
+              duration: Duration(seconds: 2),
+              backgroundColor: Color.fromARGB(255, 73, 73, 73));
+        }
+      } else {
+        Get.snackbar(
+            "No hay conexión a internet", "por favor conectese a internet",
+            colorText: Colors.white,
+            duration: Duration(seconds: 2),
+            backgroundColor: Color.fromARGB(255, 73, 73, 73));
+      }
+    }
+  }
+
+  void guardarDatos(token) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('user', user.text);
     prefs.setString('pass', pass.text);
-    await prefs.remove('userLoggedIn');
+    prefs.setString('token', token);
+  }
+
+  void cargarTokens() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token') ?? '';
+    print(token);
+    if (token != '') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HomeView()),
+      );
+    }
   }
 
   void cargarDatos() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
     user.text = prefs.getString('user') ?? '';
     pass.text = prefs.getString('pass') ?? '';
+    cargarTokens();
   }
 
   // _getPermission() async => await [
@@ -54,8 +118,9 @@ class _LoginState extends State<Login> {
   @override
   void initState() {
     super.initState();
-    _initConnectivity();
     cargarDatos();
+    _initConnectivity();
+
     // _getPermission();
   }
 
@@ -143,6 +208,7 @@ class _LoginState extends State<Login> {
                       ElevatedButton(
                         onPressed: () {
                           //Proceso de validación de usuario
+                          iniciarSesion();
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
@@ -170,9 +236,7 @@ class _LoginState extends State<Login> {
                                 style: TextStyle(
                                   decoration: TextDecoration.underline,
                                   fontSize: 18,
-                                  color: _isDarkMode != false
-                                      ? Colors.white
-                                      : Colors.black,
+                                  color: Colors.black,
                                 ),
                               ),
                             ),
@@ -185,9 +249,7 @@ class _LoginState extends State<Login> {
                                 style: TextStyle(
                                   decoration: TextDecoration.underline,
                                   fontSize: 18,
-                                  color: _isDarkMode != false
-                                      ? Colors.white
-                                      : Colors.black,
+                                  color: Colors.black,
                                 ),
                               ),
                             ),

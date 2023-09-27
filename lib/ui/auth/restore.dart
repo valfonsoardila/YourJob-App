@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'dart:async';
+import 'dart:convert';
 
 class Restore extends StatefulWidget {
   const Restore({super.key});
@@ -10,6 +13,19 @@ class Restore extends StatefulWidget {
 
 class _RestoreState extends State<Restore> {
   TextEditingController user = TextEditingController();
+  void resetPassword() async {
+    if (user.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('El campo de correo electrónico está vacío'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } else {
+      print(user.text);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,7 +98,9 @@ class _RestoreState extends State<Restore> {
                     ),
                     SizedBox(height: 20.0),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        resetPassword();
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
                         textStyle: TextStyle(
