@@ -4,7 +4,7 @@ import 'package:yourjobs_app/ui/auth/login.dart';
 import 'package:yourjobs_app/ui/auth/profile.dart';
 import 'package:yourjobs_app/ui/auth/register.dart';
 import 'package:yourjobs_app/ui/auth/restore.dart';
-import 'package:yourjobs_app/ui/home/main_provider.dart';
+import 'package:yourjobs_app/ui/home/navegation_main.dart';
 import 'package:get/get.dart';
 
 class App extends StatelessWidget {
@@ -25,7 +25,7 @@ class App extends StatelessWidget {
         "/register": (context) => Register(),
         "/restore": (context) => Restore(),
         "/profile": (context) => Profile(),
-        "/provider": (context) => MainProvider(),
+        "/main": (context) => NavegationMain(),
       },
     );
   }

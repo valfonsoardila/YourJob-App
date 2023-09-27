@@ -41,6 +41,7 @@ dependencies:
   shared_preferences: ^2.2.1
   get: ^4.6.5
   http: any
+  curved_navigation_bar: ^1.0.3
   
 dev_dependencies:
   flutter_test:

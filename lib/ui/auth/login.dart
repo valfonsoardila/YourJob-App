@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
-import 'package:yourjobs_app/ui/views/home_view.dart';
+import 'package:yourjobs_app/ui/home/navegation_main.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
@@ -63,7 +63,7 @@ class _LoginState extends State<Login> {
           guardarDatos(token);
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => HomeView()),
+            MaterialPageRoute(builder: (context) => NavegationMain()),
           );
         } else {
           Get.snackbar(
@@ -91,12 +91,13 @@ class _LoginState extends State<Login> {
 
   void cargarTokens() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('token') ?? '';
+    String token =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImVtYWlsIjoidmljdG9yYWRpbGFAZ21haWwuY29tIiwiaWF0IjoxNjk1ODQ2NjIxLCJleHAiOjE2OTU4NTAyMjF9.9h61SlRKlSy0BRjUnIW47uGa_tNmXrpO8k_KcjrJoII';
     print(token);
     if (token != '') {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => HomeView()),
+        MaterialPageRoute(builder: (context) => NavegationMain()),
       );
     }
   }
