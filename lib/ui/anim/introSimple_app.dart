@@ -41,14 +41,14 @@ class _IntroSimpleState extends State<IntroSimple> {
               child: AnimatedTextKit(
                 animatedTexts: [
                   TyperAnimatedText(
-                    'Cyber ATM', // Puedes personalizar el nombre de tu aplicación aquí
+                    'YourJob App', // Puedes personalizar el nombre de tu aplicación aquí
                     textStyle: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   TyperAnimatedText(
-                    '¡Tu cajero automatico virtual!', // Puedes personalizar el nombre de tu aplicación aquí
+                    '¡Somos tu mejor eleccion!', // Puedes personalizar el nombre de tu aplicación aquí
                     textStyle: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.normal,

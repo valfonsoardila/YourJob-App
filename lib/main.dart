@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:select_job/ui/app.dart';
+import 'package:yourjobs_app/ui/app.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
