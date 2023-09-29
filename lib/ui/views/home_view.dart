@@ -26,8 +26,8 @@ class _HomeViewState extends State<HomeView> {
   List<IconData> itemIcons = [
     Icons.home,
     Icons.assignment_late_rounded,
-    Icons.shopping_bag,
-    Icons.fastfood,
+    Icons.access_time_filled_outlined,
+    Icons.assignment_turned_in_rounded,
   ];
   //Lista de conceptos
   var filtros = <String>[
@@ -136,6 +136,7 @@ class _HomeViewState extends State<HomeView> {
                         uid: widget.uid,
                         profile: profile,
                         tasks: taskList,
+                        isEdit: false,
                       )),
             );
           },
@@ -429,7 +430,7 @@ class _HomeViewState extends State<HomeView> {
                                                       indexFiltro = 0;
                                                     } else {
                                                       if (newValue ==
-                                                          'Peniente') {
+                                                          'Pendiente') {
                                                         indexFiltro = 1;
                                                       } else {
                                                         if (newValue ==
