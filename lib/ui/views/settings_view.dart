@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 class SettingsView extends StatefulWidget {
-  const SettingsView({super.key});
+  final uid;
+  final profile;
+  final tasks;
+  const SettingsView({super.key, this.profile, this.tasks, this.uid});
 
   @override
   State<SettingsView> createState() => _SettingsViewState();
@@ -19,11 +22,12 @@ class _SettingsViewState extends State<SettingsView> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.settings, color: Colors.black, size: 30.0),
+              Icon(Icons.settings,
+                  color: Color.fromARGB(255, 46, 155, 73), size: 30.0),
               Text(
                 'Ajustes',
                 style: TextStyle(
-                  color: Colors.black,
+                  color: Color.fromARGB(255, 46, 155, 73),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -31,6 +35,7 @@ class _SettingsViewState extends State<SettingsView> {
           ),
         ),
       ),
+      body: Container(),
     );
   }
 }

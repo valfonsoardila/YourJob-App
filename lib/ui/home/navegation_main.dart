@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:yourjobs_app/ui/models/task.dart';
 import 'package:yourjobs_app/ui/views/add_task_view.dart';
 import 'package:yourjobs_app/ui/views/home_view.dart';
 import 'package:yourjobs_app/ui/views/settings_view.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 
 class NavegationMain extends StatefulWidget {
-  const NavegationMain({super.key});
+  final uid;
+  final profile;
+  final tasks;
+  const NavegationMain({super.key, this.profile, this.tasks, this.uid});
 
   @override
   State<NavegationMain> createState() => _NavegationMainState();
@@ -21,22 +25,38 @@ class _NavegationMainState extends State<NavegationMain> {
   double yOffset = 0;
   bool isDrawerOpen = false;
   String concepto = '';
+  String uid = '';
   late FocusScopeNode _focusScopeNode;
   //LISTAS
   List<int> _selectedIndexList = [0, 1, 2];
+  List<dynamic> tasks = [];
+  List<TaskModel> taskList = [];
+  Future<void> getAllTask() async {
+    taskList = widget.tasks;
+  }
+
+  getsTasksManaged(List<TaskModel> tasks) {
+    this.taskList = tasks;
+  }
 
   @override
   void initState() {
     super.initState();
     _focusScopeNode = FocusScopeNode();
+    uid = widget.uid;
+    getAllTask();
   }
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> _widgetOptions = <Widget>[
-      HomeView(),
-      AddTaskView(),
-      SettingsView(),
+      HomeView(uid: uid, tasks: taskList, profile: widget.profile),
+      AddTaskView(
+          uid: uid,
+          tasks: taskList,
+          profile: widget.profile,
+          tasksManaged: getsTasksManaged),
+      SettingsView(uid: uid, tasks: taskList, profile: widget.profile),
     ];
     return Scaffold(
       //Estilos para el panel de navegacion inferior de la aplicacion

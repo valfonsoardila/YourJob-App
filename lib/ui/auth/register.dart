@@ -44,30 +44,28 @@ class _RegisterState extends State<Register> {
           duration: Duration(seconds: 2),
           backgroundColor: Color.fromARGB(255, 73, 73, 73));
     } else {
-      if (_controllerconectivity != false) {
+      if (_controllerconectivity) {
         var data = {
           "name": nombre.text,
           "email": user.text,
-          "password": pass.text,
+          "password": pass.text
         };
-        print(data);
-        var response = await http.post(
-            Uri.parse("http://192.168.100.3:3000/users"),
+        final response = await http.post(
+            Uri.parse(
+                'http://192.168.100.3:3000/users'), // Reemplaza con la URL de tu backend
             headers: {"Content-Type": "application/json"},
             body: jsonEncode(data));
-        var message = jsonDecode(response.body);
-
-        print("mensaje: $message");
-        print("response: ${response.statusCode}");
-        if (message['msg'] != "Validation error") {
-          Get.snackbar("Usuario registrado", "Inicie sesión",
-              colorText: Colors.white,
-              duration: Duration(seconds: 2),
-              backgroundColor: Color.fromARGB(255, 73, 73, 73));
+        if (response.statusCode == 200) {
+          print("Entro al if");
+          final responseData = json.decode(response.body);
+          final token = responseData['token'];
+          // Guarda el token en las preferencias compartidas
+          final prefs = await SharedPreferences.getInstance();
+          prefs.setString('token', token);
+          // También puedes redirigir al usuario a otra pantalla aquí
           Get.toNamed('/login');
         } else {
-          Get.snackbar(
-              "Ya existe un usuario con ese correo", "Intente de nuevo",
+          Get.snackbar("Error al registrar", "por favor intente de nuevo",
               colorText: Colors.white,
               duration: Duration(seconds: 2),
               backgroundColor: Color.fromARGB(255, 73, 73, 73));

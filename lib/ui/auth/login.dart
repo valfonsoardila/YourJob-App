@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
-import 'package:yourjobs_app/ui/home/navegation_main.dart';
+import 'package:yourjobs_app/ui/home/main_provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
@@ -18,7 +18,7 @@ class _LoginState extends State<Login> {
   TextEditingController user = TextEditingController();
   TextEditingController pass = TextEditingController();
   bool _controllerconectivity = false;
-  bool _isLogin = false;
+  String token = '';
 
   void _initConnectivity() async {
     // Obtiene el estado de la conectividad al inicio
@@ -37,92 +37,93 @@ class _LoginState extends State<Login> {
     });
   }
 
-  Future<void> iniciarSesion() async {
-    if (user.text.isEmpty || pass.text.isEmpty) {
-      Get.snackbar("Todos los campos son obligatorios",
+  void iniciarSesion() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (user.text == '' && pass.text == '') {
+      Get.snackbar("No ha llenado su usuario y contraseña",
           "por favor llene todos los campos",
           colorText: Colors.white,
           duration: Duration(seconds: 2),
           backgroundColor: Color.fromARGB(255, 73, 73, 73));
     } else {
-      if (_controllerconectivity != false) {
-        var data = {
-          "email": user.text,
-          "password": pass.text,
-        };
-        print(data);
-        var response = await http.post(
-            Uri.parse("http://192.168.100.3:3000/auth/login"),
-            headers: {"Content-Type": "application/json"},
-            body: jsonEncode(data));
-        var message = jsonDecode(response.body);
-        print("mensaje: $message");
-        if (message['message'] != 'Usuario no encontrado' &&
-            message['message'] != 'Contraseña incorrecta') {
-          String token = message['token'];
-          guardarDatos(token);
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => NavegationMain()),
-          );
-        } else {
-          Get.snackbar(
-              "Error al iniciar sesión", "por favor verifique sus credenciales",
-              colorText: Colors.white,
-              duration: Duration(seconds: 2),
-              backgroundColor: Color.fromARGB(255, 73, 73, 73));
-        }
-      } else {
-        Get.snackbar(
-            "No hay conexión a internet", "por favor conectese a internet",
+      if (user.text == '' || pass.text == '') {
+        Get.snackbar("Su usuario o contraseña esta vacio",
+            "por favor llene todos los campos",
             colorText: Colors.white,
             duration: Duration(seconds: 2),
             backgroundColor: Color.fromARGB(255, 73, 73, 73));
+      } else {
+        if (_controllerconectivity) {
+          var response = await http.get(
+            Uri.parse('http://192.168.100.3:3000/users'),
+            headers: {"Content-Type": "application/json"},
+          );
+          print(response.body);
+          if (response.statusCode == 200) {
+            print("Entro al if");
+            final responseData = json.decode(response.body);
+            print(responseData);
+            bool tieneCorreo =
+                responseData.any((element) => element['email'] == user.text);
+            bool tienePass =
+                responseData.any((element) => element['password'] == pass.text);
+            if (tieneCorreo && tienePass) {
+              var profile;
+              for (var i = 0; i < responseData.length; i++) {
+                if (responseData[i]['email'] == user.text &&
+                    responseData[i]['password'] == pass.text) {
+                  profile = {
+                    "token": prefs.getString('token') ?? '',
+                    "id": responseData[i]['id'],
+                    "name": responseData[i]['name'],
+                    "email": responseData[i]['email'],
+                    "password": responseData[i]['password'],
+                  };
+                  guardarDatos();
+                }
+              }
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => MainProvider(
+                          profile: profile,
+                        )),
+              );
+            } else {
+              Get.snackbar("Autenticacion", "Este usuario no esta registrado",
+                  colorText: Colors.white,
+                  duration: Duration(seconds: 2),
+                  backgroundColor: Color.fromARGB(255, 73, 73, 73));
+            }
+          } else {
+            Get.snackbar("Autenticacion", "Usuario o contraseña incorrectos",
+                colorText: Colors.white,
+                duration: Duration(seconds: 2),
+                backgroundColor: Color.fromARGB(255, 73, 73, 73));
+          }
+        }
       }
     }
   }
 
-  void guardarDatos(token) async {
+  void guardarDatos() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('user', user.text);
     prefs.setString('pass', pass.text);
-    prefs.setString('token', token);
-  }
-
-  void cargarTokens() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImVtYWlsIjoidmljdG9yYWRpbGFAZ21haWwuY29tIiwiaWF0IjoxNjk1ODQ2NjIxLCJleHAiOjE2OTU4NTAyMjF9.9h61SlRKlSy0BRjUnIW47uGa_tNmXrpO8k_KcjrJoII';
-    print(token);
-    if (token != '') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => NavegationMain()),
-      );
-    }
   }
 
   void cargarDatos() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
     user.text = prefs.getString('user') ?? '';
     pass.text = prefs.getString('pass') ?? '';
-    cargarTokens();
+    token = prefs.getString('token') ?? '';
   }
-
-  // _getPermission() async => await [
-  //       Permission.sms,
-  //       Permission.location,
-  //       Permission.storage,
-  //     ].request();
 
   @override
   void initState() {
     super.initState();
     cargarDatos();
     _initConnectivity();
-
-    // _getPermission();
   }
 
   @override

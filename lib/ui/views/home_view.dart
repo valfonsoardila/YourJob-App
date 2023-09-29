@@ -1,24 +1,98 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:yourjobs_app/ui/models/task.dart';
+import 'package:yourjobs_app/ui/views/add_task_view.dart';
 import 'package:yourjobs_app/ui/views/task_list_view.dart';
 
 class HomeView extends StatefulWidget {
-  const HomeView({super.key});
+  final uid;
+  final profile;
+  final tasks;
+  const HomeView({super.key, this.profile, this.tasks, this.uid});
 
   @override
   State<HomeView> createState() => _HomeViewState();
 }
 
 class _HomeViewState extends State<HomeView> {
+  late List<_ChartData> data;
+  late TooltipBehavior _tooltip;
+  int indexIcon = 1;
+  int indexFiltro = 0;
+  String filtroSeleccionadoDropd1 = 'Filtros';
+  int indexSelected2 = 0;
+  List<IconData> itemIcons = [
+    Icons.home,
+    Icons.assignment_late_rounded,
+    Icons.shopping_bag,
+    Icons.fastfood,
+  ];
+  //Lista de conceptos
+  var filtros = <String>[
+    'Filtros',
+    'Pendiente',
+    'En proceso',
+    'Completado',
+  ];
+  var coloresFiltro = <Color>[
+    Colors.white,
+    Colors.red,
+    Colors.orange,
+    Colors.green,
+  ];
   // Variable para controlar la apertura y cierre del buscador
+  Map<String, dynamic> profile = {};
   bool _isSearchOpen = false;
+  bool _opcionView = false;
+  double min = 0;
+  double max = 600;
+  int quantityTasks = 0;
+  List<TaskModel> taskList = [];
+  List<Color> gradientColors = [
+    Color(0xff23b6e6),
+    Color(0xff02d39a),
+  ];
+  @override
+  void initState() {
+    data = <_ChartData>[
+      _ChartData('Enero', 35),
+      _ChartData('Febrero', 28),
+      _ChartData('Marzo', 34),
+      _ChartData('Abril', 32),
+      _ChartData('Mayo', 40),
+      _ChartData('Junio', 32),
+      _ChartData('Julio', 35),
+      _ChartData('Agosto', 28),
+      _ChartData('Septiembre', 34),
+      _ChartData('Octubre', 32),
+      _ChartData('Noviembre', 40),
+      _ChartData('Diciembre', 32),
+    ];
+    _tooltip = TooltipBehavior(enable: true);
+    profile = widget.profile;
+    if (widget.tasks != null) {
+      taskList = widget.tasks;
+      quantityTasks = taskList.length;
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            // Aquí puedes definir la acción que se realiza cuando se presiona el FAB.
+            _opcionView = true;
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => AddTaskView(
+                        opcionView: _opcionView,
+                        uid: widget.uid,
+                        profile: profile,
+                        tasks: taskList,
+                      )),
+            );
           },
           child: Icon(Icons.add), // Cambia esto por el icono que desees
           foregroundColor: Colors.white, // Cambia el color del icono
@@ -37,11 +111,12 @@ class _HomeViewState extends State<HomeView> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.home, color: Colors.black, size: 30.0),
+                Icon(Icons.home,
+                    color: Color.fromARGB(255, 46, 155, 73), size: 30.0),
                 Text(
                   'Inicio',
                   style: TextStyle(
-                    color: Colors.black,
+                    color: Color.fromARGB(255, 46, 155, 73),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -119,44 +194,118 @@ class _HomeViewState extends State<HomeView> {
                   height: MediaQuery.of(context).size.height * 0.25,
                   child: Container(
                     margin: EdgeInsets.symmetric(horizontal: 15),
-                    decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 243, 241, 241),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          spreadRadius: 1,
-                          blurRadius: 5,
-                          offset: Offset(0, 3),
+                    child: InkWell(
+                      onTap: () {},
+                      child: Container(
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                spreadRadius: 1,
+                                blurRadius: 5,
+                                offset: Offset(0, 3),
+                              ),
+                            ],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Container(
+                              child: SfCartesianChart(
+                                  plotAreaBorderWidth: 0,
+                                  title: ChartTitle(
+                                      text: 'Flujo de tareas: $quantityTasks'),
+                                  legend: Legend(isVisible: false),
+                                  primaryXAxis: CategoryAxis(
+                                    labelPlacement: LabelPlacement.onTicks,
+                                    majorGridLines: MajorGridLines(width: 0),
+                                    name: 'Meses',
+                                    title: AxisTitle(text: 'Meses'),
+                                    axisLine: AxisLine(width: 0),
+                                    arrangeByIndex: true,
+                                    labelIntersectAction:
+                                        AxisLabelIntersectAction.rotate45,
+                                  ),
+                                  primaryYAxis: NumericAxis(
+                                      name: 'Tareas',
+                                      title: AxisTitle(text: 'Tareas'),
+                                      minimum: min,
+                                      maximum: max,
+                                      interval: max / 10),
+                                  series: <ChartSeries<dynamic, String>>[
+                                AreaSeries<dynamic, String>(
+                                  dataSource: data,
+                                  xValueMapper: (dynamic data, _) => data.x,
+                                  yValueMapper: (dynamic data, _) => data.y,
+                                  name: 'Gold',
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: gradientColors,
+                                  ),
+                                  color: Color.fromRGBO(255, 255, 255, 0.3),
+                                )
+                              ])),
                         ),
-                      ],
-                      borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                 ),
                 Container(
                   width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height * 0.6,
+                  height: MediaQuery.of(context).size.height * 0.65,
                   child: Column(
                     children: [
                       Container(
+                        margin:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              spreadRadius: 1,
+                              blurRadius: 5,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        width: MediaQuery.of(context).size.width,
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Container(
-                              margin: EdgeInsets.only(left: 15),
+                              alignment: Alignment.center,
                               child: TextButton(
                                 onPressed: () {
+                                  print("uid antes de neviar: ${widget.uid}");
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => TaskListView()),
+                                        builder: (context) => TaskListView(
+                                              uid: widget.uid,
+                                              profile: profile,
+                                              tasks: taskList,
+                                            )),
                                   );
                                 },
-                                child: Text(
-                                  'Tareas >',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
+                                child: Container(
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'Ver todas las tareas',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          decoration: TextDecoration.underline,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.folder_zip,
+                                        color: Colors.black,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -178,6 +327,205 @@ class _HomeViewState extends State<HomeView> {
                             ),
                           ],
                         ),
+                        child: Container(
+                          child: Column(
+                            children: [
+                              Container(
+                                margin: EdgeInsets.symmetric(horizontal: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      spreadRadius: 1,
+                                      blurRadius: 5,
+                                      offset: Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      color: coloresFiltro[indexFiltro],
+                                      width: MediaQuery.of(context).size.width *
+                                          0.32,
+                                      alignment: Alignment.centerLeft,
+                                      child: Row(
+                                        children: [
+                                          Icon(itemIcons[indexFiltro],
+                                              color: Colors.black, size: 20.0),
+                                          Expanded(
+                                            child: DropdownButton(
+                                                padding:
+                                                    EdgeInsets.only(left: 5),
+                                                hint: Text(
+                                                  'Filtro',
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                                dropdownColor: Colors.white
+                                                    .withOpacity(0.9),
+                                                icon: Icon(
+                                                    Icons.arrow_drop_down,
+                                                    color: Colors.black,
+                                                    size: 20),
+                                                iconSize: 36,
+                                                isExpanded: true,
+                                                underline: SizedBox(),
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                ),
+                                                value: filtroSeleccionadoDropd1,
+                                                onChanged: (newValue) {
+                                                  setState(() {
+                                                    if (newValue == "Filtros") {
+                                                      indexFiltro = 0;
+                                                    } else {
+                                                      if (newValue ==
+                                                          'Peniente') {
+                                                        indexFiltro = 1;
+                                                      } else {
+                                                        if (newValue ==
+                                                            'En proceso') {
+                                                          indexFiltro = 2;
+                                                        } else {
+                                                          if (newValue ==
+                                                              'Completado') {
+                                                            indexFiltro = 3;
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                    filtroSeleccionadoDropd1 =
+                                                        newValue.toString();
+                                                    indexSelected2 =
+                                                        filtros.indexOf(newValue
+                                                            .toString());
+                                                    print(
+                                                        indexSelected2); // Actualiza el valor seleccionado
+                                                  });
+                                                },
+                                                items: filtros.map((valueItem) {
+                                                  return DropdownMenuItem(
+                                                    value: valueItem,
+                                                    child: Text(valueItem),
+                                                  );
+                                                }).toList()),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.only(left: 15),
+                                      child: Text(
+                                        'Lista de tareas',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                child: Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: ListView.builder(
+                                        itemCount: taskList.length,
+                                        itemBuilder:
+                                            (BuildContext context, int index) {
+                                          return SingleChildScrollView(
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(10)),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black
+                                                        .withOpacity(0.2),
+                                                    spreadRadius: 1,
+                                                    blurRadius: 5,
+                                                    offset: Offset(0, 3),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: ExpansionTile(
+                                                iconColor: Colors.white70,
+                                                initiallyExpanded: false,
+                                                trailing: Icon(
+                                                  Icons.arrow_drop_down,
+                                                  color: Colors.black,
+                                                ),
+                                                leading: Icon(
+                                                  Icons.assignment,
+                                                  color: Colors.black,
+                                                ),
+                                                title: Text(
+                                                  'Tarea ${index + 1}',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                                subtitle: Text(
+                                                  'Fecha: ${taskList[index].dueDate}',
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(8.0),
+                                                    child: Container(
+                                                      child: Column(
+                                                        children: [
+                                                          Text(
+                                                            taskList[index]
+                                                                .title,
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .black,
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                          Text(
+                                                            taskList[index]
+                                                                .description,
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .black,
+                                                                fontSize: 14),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       )
                     ],
                   ),
@@ -187,4 +535,11 @@ class _HomeViewState extends State<HomeView> {
           ),
         ));
   }
+}
+
+class _ChartData {
+  _ChartData(this.x, this.y);
+
+  final String x;
+  final int y;
 }
