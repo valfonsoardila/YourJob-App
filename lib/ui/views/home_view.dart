@@ -8,7 +8,9 @@ class HomeView extends StatefulWidget {
   final uid;
   final profile;
   final tasks;
-  const HomeView({super.key, this.profile, this.tasks, this.uid});
+  final tasksManaged;
+  const HomeView(
+      {super.key, this.profile, this.tasks, this.uid, this.tasksManaged});
 
   @override
   State<HomeView> createState() => _HomeViewState();
@@ -34,6 +36,21 @@ class _HomeViewState extends State<HomeView> {
     'En proceso',
     'Completado',
   ];
+  List<String> Meses = [
+    'Ene',
+    'Feb',
+    'Mar',
+    'Abr',
+    'May',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dic'
+  ];
+
   var coloresFiltro = <Color>[
     Colors.white,
     Colors.red,
@@ -45,34 +62,62 @@ class _HomeViewState extends State<HomeView> {
   bool _isSearchOpen = false;
   bool _opcionView = false;
   double min = 0;
-  double max = 600;
+  double max = 10;
   int quantityTasks = 0;
   List<TaskModel> taskList = [];
   List<Color> gradientColors = [
     Color(0xff23b6e6),
     Color(0xff02d39a),
   ];
+  getsTasksManaged(List<TaskModel> tasks) {
+    setState(() {
+      this.taskList = tasks;
+      quantityTasks = taskList.length;
+    });
+    callbackTasks(taskList);
+  }
+
+  //callback function
+  void callbackTasks(List<TaskModel> tasks) {
+    widget.tasksManaged(tasks);
+  }
+
+  void graficarTareasPorMes(tasks) {
+    var contador = 0;
+    for (int i = 0; i < Meses.length; i++) {
+      for (int j = 0; j < tasks.length; j++) {
+        if (int.parse(tasks[j].dueDate.substring(5, 7)) == i + 1) {
+          //obtener la cantidad de tareas en este mes
+          contador++;
+          print("contador: $contador");
+          data[i] = _ChartData(Meses[i], contador);
+        }
+      }
+    }
+  }
+
   @override
   void initState() {
     data = <_ChartData>[
-      _ChartData('Enero', 35),
-      _ChartData('Febrero', 28),
-      _ChartData('Marzo', 34),
-      _ChartData('Abril', 32),
-      _ChartData('Mayo', 40),
-      _ChartData('Junio', 32),
-      _ChartData('Julio', 35),
-      _ChartData('Agosto', 28),
-      _ChartData('Septiembre', 34),
-      _ChartData('Octubre', 32),
-      _ChartData('Noviembre', 40),
-      _ChartData('Diciembre', 32),
+      _ChartData('Ene', 0),
+      _ChartData('Feb', 0),
+      _ChartData('Mar', 0),
+      _ChartData('Abr', 0),
+      _ChartData('May', 0),
+      _ChartData('Jun', 0),
+      _ChartData('Jul', 0),
+      _ChartData('Ago', 0),
+      _ChartData('Sep', 0),
+      _ChartData('Oct', 0),
+      _ChartData('Nov', 0),
+      _ChartData('Dic', 0),
     ];
     _tooltip = TooltipBehavior(enable: true);
     profile = widget.profile;
     if (widget.tasks != null) {
       taskList = widget.tasks;
       quantityTasks = taskList.length;
+      graficarTareasPorMes(taskList);
     }
     super.initState();
   }
@@ -286,6 +331,7 @@ class _HomeViewState extends State<HomeView> {
                                               uid: widget.uid,
                                               profile: profile,
                                               tasks: taskList,
+                                              tasksManaged: getsTasksManaged,
                                             )),
                                   );
                                 },
@@ -541,5 +587,5 @@ class _ChartData {
   _ChartData(this.x, this.y);
 
   final String x;
-  final int y;
+  late final int y;
 }

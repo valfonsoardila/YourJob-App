@@ -11,6 +11,7 @@ class AddTaskView extends StatefulWidget {
   final uid;
   final profile;
   final tasks;
+  final isEdit;
   final tasksManaged;
   const AddTaskView(
       {super.key,
@@ -19,7 +20,8 @@ class AddTaskView extends StatefulWidget {
       this.uid,
       this.profile,
       this.tasks,
-      this.tasksManaged});
+      this.tasksManaged,
+      this.isEdit});
 
   @override
   State<AddTaskView> createState() => _AddTaskViewState();
@@ -48,6 +50,69 @@ class _AddTaskViewState extends State<AddTaskView> {
   //callback function
   void callbackTasks(List<TaskModel> tasks) {
     widget.tasksManaged(tasks);
+  }
+
+  Future<void> updateTask(task) async {
+    if (task['title'] == '' || task['description'] == '') {
+      return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('No se puede actualizar la tarea'),
+            content: Text('Debes completar todos los campos'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Cerrar'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      print(task);
+      var urlTask = "http://192.168.100.3:3000/tasks/${task['id']}";
+      print(urlTask);
+      final response = await http.put(
+        Uri.parse(urlTask), // Reemplaza con la URL de tu servidor Node.js
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(task),
+      );
+      var message = jsonDecode(response.body);
+      print(message);
+      if (response.statusCode == 200) {
+        // Si la solicitud es exitosa, puedes manejar la respuesta aquí
+        print('Tarea actualizada exitosamente');
+        tasks.removeWhere((element) => element.id == task['id']);
+        tasks.add(
+          TaskModel(
+            task['id'].toString(),
+            task['title'],
+            task['description'],
+            task['dueDate'],
+            task['status'],
+          ),
+        );
+        callbackTasks(tasks);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TaskListView(
+              uid: uid,
+              profile: widget.profile,
+              tasks: tasks,
+            ),
+          ),
+        );
+      } else {
+        // Si la solicitud falla, puedes manejar el error aquí
+        print('Error al actualizar la tarea');
+        print('Código de respuesta: ${response.statusCode}');
+        print('Mensaje de error: ${response.body}');
+      }
+    }
   }
 
   Future<void> createTask(task) async {
@@ -269,101 +334,187 @@ class _AddTaskViewState extends State<AddTaskView> {
                   ],
                 ),
               ),
-              Container(
-                margin: EdgeInsets.symmetric(vertical: 10),
-                child: Column(
-                  children: [
-                    Text('Estado de la tarea',
-                        style: TextStyle(
-                            fontSize: 20.0, fontWeight: FontWeight.bold)),
-                    Container(
-                      height: 60.0,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.grey
-                              .shade500, // Puedes cambiar el color del borde aquí
-                          width: 1.0, // Puedes ajustar el grosor del borde aquí
-                        ),
-                        borderRadius: BorderRadius.circular(
-                            8.0), // Puedes ajustar la esquina redondeada aquí
-                      ),
-                      child: Row(
+              widget.isEdit
+                  ? Container(
+                      margin: EdgeInsets.symmetric(vertical: 10),
+                      child: Column(
                         children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Icon(
-                                Icons
-                                    .dashboard_rounded, // Puedes cambiar el icono aquí
-                                color: Color.fromARGB(255, 72, 143, 202)),
-                          ),
-                          Expanded(
-                            child: DropdownButton(
-                              hint: Text(
-                                'Talla',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                ),
-                              ),
-                              dropdownColor: Colors.white,
-                              icon: Icon(
-                                Icons.arrow_drop_down,
-                                color: Colors.black,
-                              ),
-                              iconSize: 36,
-                              isExpanded: true,
-                              underline: SizedBox(),
+                          Text('Estado de la tarea',
                               style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
+                                  fontSize: 20.0, fontWeight: FontWeight.bold)),
+                          Container(
+                            height: 60.0,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.grey
+                                    .shade500, // Puedes cambiar el color del borde aquí
+                                width:
+                                    1.0, // Puedes ajustar el grosor del borde aquí
                               ),
-                              value: estadoSeleccionado,
-                              onChanged: (newValue) {
-                                setState(() {
-                                  estadoSeleccionado = newValue
-                                      .toString(); // Actualiza el valor seleccionado
-                                });
-                              },
-                              items: estados.map((valueItem) {
-                                return DropdownMenuItem(
-                                  value: valueItem,
-                                  child: Text(valueItem),
-                                );
-                              }).toList(),
+                              borderRadius: BorderRadius.circular(
+                                  8.0), // Puedes ajustar la esquina redondeada aquí
                             ),
-                          ),
+                            child: Row(
+                              children: [
+                                Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 8.0),
+                                  child: Icon(
+                                      Icons
+                                          .dashboard_rounded, // Puedes cambiar el icono aquí
+                                      color: Color.fromARGB(255, 72, 143, 202)),
+                                ),
+                                Expanded(
+                                  child: DropdownButton(
+                                    hint: Text(
+                                      'Talla',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    dropdownColor: Colors.white,
+                                    icon: Icon(
+                                      Icons.arrow_drop_down,
+                                      color: Colors.black,
+                                    ),
+                                    iconSize: 36,
+                                    isExpanded: true,
+                                    underline: SizedBox(),
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 18,
+                                    ),
+                                    value: estadoSeleccionado,
+                                    onChanged: (newValue) {
+                                      setState(() {
+                                        estadoSeleccionado = newValue
+                                            .toString(); // Actualiza el valor seleccionado
+                                      });
+                                    },
+                                    items: estados.map((valueItem) {
+                                      return DropdownMenuItem(
+                                        value: valueItem,
+                                        child: Text(valueItem),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
                         ],
                       ),
                     )
-                  ],
-                ),
-              ),
+                  : Container(
+                      margin: EdgeInsets.symmetric(vertical: 10),
+                      child: Column(
+                        children: [
+                          Text('Estado de la tarea',
+                              style: TextStyle(
+                                  fontSize: 20.0, fontWeight: FontWeight.bold)),
+                          Container(
+                            height: 60.0,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.grey.shade500,
+                                width: 1.0,
+                              ),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Row(
+                              children: [
+                                Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 8.0),
+                                  child: Icon(
+                                    Icons.dashboard_rounded,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      // Puedes agregar alguna acción si es necesario
+                                    },
+                                    child: AbsorbPointer(
+                                      absorbing: true,
+                                      child: TextField(
+                                        decoration: InputDecoration(
+                                          hintText: estadoSeleccionado,
+                                          hintStyle: TextStyle(
+                                            color: Colors.grey.shade500,
+                                            fontSize: 18,
+                                          ),
+                                          border: InputBorder.none,
+                                        ),
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
               Container(
                 margin: EdgeInsets.symmetric(vertical: 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        var task = {
-                          'title': _titleController.text,
-                          'description': _descriptionController.text,
-                          'dueDate': _selectedDate.toString(),
-                          'status': estadoSeleccionado,
-                          'UserId': uid,
-                        };
-                        createTask(task);
-                      },
-                      child: Text('Guardar',
-                          style: TextStyle(
-                              fontSize: 20.0, fontWeight: FontWeight.bold)),
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: Size(150, 50),
-                        backgroundColor: Color.fromARGB(255, 72, 143, 202),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                      ),
-                    ),
+                    widget.isEdit
+                        ? ElevatedButton(
+                            onPressed: () {
+                              var task = {
+                                'title': _titleController.text,
+                                'description': _descriptionController.text,
+                                'dueDate': _selectedDate.toString(),
+                                'status': estadoSeleccionado,
+                                'UserId': uid,
+                              };
+                              updateTask(task);
+                            },
+                            child: Text('Actualizar',
+                                style: TextStyle(
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.bold)),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(150, 50),
+                              backgroundColor:
+                                  Color.fromARGB(255, 72, 143, 202),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                          )
+                        : ElevatedButton(
+                            onPressed: () {
+                              var task = {
+                                'title': _titleController.text,
+                                'description': _descriptionController.text,
+                                'dueDate': _selectedDate.toString(),
+                                'status': estadoSeleccionado,
+                                'UserId': uid,
+                              };
+                              createTask(task);
+                            },
+                            child: Text('Guardar',
+                                style: TextStyle(
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.bold)),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(150, 50),
+                              backgroundColor:
+                                  Color.fromARGB(255, 72, 143, 202),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                          ),
                   ],
                 ),
               ),

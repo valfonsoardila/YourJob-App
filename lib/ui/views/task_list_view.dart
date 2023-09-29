@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart';
 import 'package:yourjobs_app/ui/models/task.dart';
 import 'package:yourjobs_app/ui/views/add_task_view.dart';
+import 'package:http/http.dart' as http;
+import 'dart:async';
 
 class TaskListView extends StatefulWidget {
   final uid;
   final profile;
   final tasks;
-  const TaskListView({super.key, this.tasks, this.uid, this.profile});
+  final tasksManaged;
+  const TaskListView(
+      {super.key, this.tasks, this.uid, this.profile, this.tasksManaged});
 
   @override
   State<TaskListView> createState() => _TaskListViewState();
@@ -15,6 +19,35 @@ class TaskListView extends StatefulWidget {
 
 class _TaskListViewState extends State<TaskListView> {
   List<TaskModel> _tasks = [];
+
+  //callback function
+  void callbackTasks(List<TaskModel> tasks) {
+    _tasks = tasks;
+    widget.tasksManaged(_tasks);
+  }
+
+  Future<void> deleteTask(id) async {
+    var urlTask = "http://192.168.100.3:3000/tasks/$id";
+    var response = await http.delete(
+      Uri.parse(urlTask),
+      headers: {"Content-Type": "application/json"},
+    );
+    if (response.statusCode == 204) {
+      setState(() {
+        _tasks.removeWhere((element) => element.id == id);
+      });
+      callbackTasks(_tasks);
+    } else {
+      Get.snackbar(
+        'Ha ocurrido un error',
+        'No se pudo eliminar la tarea',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
   @override
   void initState() {
     _tasks = widget.tasks;
@@ -194,7 +227,9 @@ class _TaskListViewState extends State<TaskListView> {
                               children: [
                                 IconButton(
                                   iconSize: 55,
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    deleteTask(_tasks[index].id);
+                                  },
                                   icon: CircleAvatar(
                                     radius: 35,
                                     backgroundColor: Colors.red,
@@ -207,6 +242,7 @@ class _TaskListViewState extends State<TaskListView> {
                                 IconButton(
                                   iconSize: 55,
                                   onPressed: () {
+                                    bool _isEdit = true;
                                     var data = _tasks[index];
                                     Navigator.push(
                                       context,
@@ -216,7 +252,9 @@ class _TaskListViewState extends State<TaskListView> {
                                               dataEdit: data,
                                               uid: widget.uid,
                                               profile: widget.profile,
-                                              tasks: _tasks)),
+                                              tasks: _tasks,
+                                              isEdit: _isEdit,
+                                              tasksManaged: callbackTasks)),
                                     );
                                   },
                                   icon: CircleAvatar(

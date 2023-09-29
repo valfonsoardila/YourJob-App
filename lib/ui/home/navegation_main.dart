@@ -50,11 +50,16 @@ class _NavegationMainState extends State<NavegationMain> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> _widgetOptions = <Widget>[
-      HomeView(uid: uid, tasks: taskList, profile: widget.profile),
+      HomeView(
+          uid: uid,
+          tasks: taskList,
+          profile: widget.profile,
+          tasksManaged: getsTasksManaged),
       AddTaskView(
           uid: uid,
           tasks: taskList,
           profile: widget.profile,
+          isEdit: false,
           tasksManaged: getsTasksManaged),
       SettingsView(uid: uid, tasks: taskList, profile: widget.profile),
     ];
