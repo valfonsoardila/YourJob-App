@@ -240,6 +240,7 @@ class _HomeViewState extends State<HomeView> {
                                     setState(() {
                                       _isSearchOpen = false;
                                       _searchController.clear();
+                                      searchTasks("");
                                     });
                                   },
                                   icon: Icon(
