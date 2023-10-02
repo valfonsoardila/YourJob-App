@@ -85,10 +85,10 @@ class _TaskListViewState extends State<TaskListView> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(30),
                 child: Container(
-                  color: Colors.grey.shade600,
+                  color: Colors.white,
                   child: Icon(
                     itemIcons[int.parse(e.id)],
-                    color: Colors.white,
+                    color: Color.fromARGB(255, 46, 155, 73),
                     size: 30,
                   ),
                 ),
