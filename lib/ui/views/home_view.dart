@@ -19,6 +19,7 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   late List<_ChartData> data;
   late TooltipBehavior _tooltip;
+  TextEditingController _searchController = TextEditingController();
   int indexIcon = 1;
   int indexFiltro = 0;
   String filtroSeleccionadoDropd1 = 'Filtros';
@@ -65,6 +66,8 @@ class _HomeViewState extends State<HomeView> {
   double max = 10;
   int quantityTasks = 0;
   List<TaskModel> taskList = [];
+  List<TaskModel> taskListAux = [];
+  List<TaskModel> categories = [];
   List<Color> gradientColors = [
     Color(0xff23b6e6),
     Color(0xff02d39a),
@@ -82,7 +85,7 @@ class _HomeViewState extends State<HomeView> {
     widget.tasksManaged(tasks);
   }
 
-  void graficarTareasPorMes(tasks) {
+  void graphTasksPerMonth(tasks) {
     var contador = 0;
     for (int i = 0; i < Meses.length; i++) {
       for (int j = 0; j < tasks.length; j++) {
@@ -96,28 +99,45 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
+  void selectCategory(categoria) {
+    categories = [];
+    taskList = taskListAux;
+    if (categoria != "Todos") {
+      for (var i = 0; i < taskList.length; i++) {
+        if (taskList[i].status == categoria) {
+          categories.add(taskList[i]);
+        }
+      }
+      taskList = [];
+      taskList = categories;
+    } else {
+      taskList = taskListAux;
+    }
+  }
+
   @override
   void initState() {
     data = <_ChartData>[
-      _ChartData('Ene', 0),
+      _ChartData('Jan', 0),
       _ChartData('Feb', 0),
       _ChartData('Mar', 0),
-      _ChartData('Abr', 0),
+      _ChartData('Apr', 0),
       _ChartData('May', 0),
       _ChartData('Jun', 0),
       _ChartData('Jul', 0),
-      _ChartData('Ago', 0),
+      _ChartData('Aug', 0),
       _ChartData('Sep', 0),
       _ChartData('Oct', 0),
       _ChartData('Nov', 0),
-      _ChartData('Dic', 0),
+      _ChartData('Dec', 0),
     ];
     _tooltip = TooltipBehavior(enable: true);
     profile = widget.profile;
     if (widget.tasks != null) {
       taskList = widget.tasks;
+      taskListAux = widget.tasks;
       quantityTasks = taskList.length;
-      graficarTareasPorMes(taskList);
+      graphTasksPerMonth(taskList);
     }
     super.initState();
   }
@@ -190,6 +210,7 @@ class _HomeViewState extends State<HomeView> {
                             borderRadius: BorderRadius.circular(50),
                           ),
                           child: TextFormField(
+                            controller: _searchController,
                             decoration: InputDecoration(
                                 hintText: 'Buscar',
                                 hintStyle: TextStyle(
@@ -212,6 +233,9 @@ class _HomeViewState extends State<HomeView> {
                               color: Colors.black,
                               fontSize: 18,
                             ),
+                            onChanged: (value) {
+                              setState(() {});
+                            },
                           ),
                         )
                       : Container(
@@ -428,18 +452,26 @@ class _HomeViewState extends State<HomeView> {
                                                   setState(() {
                                                     if (newValue == "Filtros") {
                                                       indexFiltro = 0;
+                                                      selectCategory('Todos');
                                                     } else {
                                                       if (newValue ==
                                                           'Pendiente') {
                                                         indexFiltro = 1;
+                                                        selectCategory(
+                                                            'Pendiente');
                                                       } else {
                                                         if (newValue ==
                                                             'En proceso') {
                                                           indexFiltro = 2;
+                                                          selectCategory(
+                                                              'En proceso');
                                                         } else {
                                                           if (newValue ==
                                                               'Completado') {
                                                             indexFiltro = 3;
+
+                                                            selectCategory(
+                                                                'Completado');
                                                           }
                                                         }
                                                       }
