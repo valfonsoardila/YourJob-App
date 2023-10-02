@@ -300,7 +300,7 @@ class _HomeViewState extends State<HomeView> {
                                       name: 'Tareas',
                                       title: AxisTitle(text: 'Tareas'),
                                       minimum: min,
-                                      maximum: max,
+                                      maximum: max * taskList.length,
                                       interval: max / 10),
                                   series: <ChartSeries<dynamic, String>>[
                                 AreaSeries<dynamic, String>(
