@@ -115,6 +115,23 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
+  void searchTasks(String search) {
+    print("search: $search");
+    categories = [];
+    taskList = taskListAux;
+    if (search != "") {
+      for (var i = 0; i < taskList.length; i++) {
+        if (taskList[i].title.contains(search)) {
+          categories.add(taskList[i]);
+        }
+      }
+      taskList = [];
+      taskList = categories;
+    } else {
+      taskList = taskListAux;
+    }
+  }
+
   @override
   void initState() {
     data = <_ChartData>[
@@ -222,6 +239,7 @@ class _HomeViewState extends State<HomeView> {
                                   onPressed: () {
                                     setState(() {
                                       _isSearchOpen = false;
+                                      _searchController.clear();
                                     });
                                   },
                                   icon: Icon(
@@ -234,7 +252,9 @@ class _HomeViewState extends State<HomeView> {
                               fontSize: 18,
                             ),
                             onChanged: (value) {
-                              setState(() {});
+                              setState(() {
+                                searchTasks(value);
+                              });
                             },
                           ),
                         )
@@ -451,25 +471,28 @@ class _HomeViewState extends State<HomeView> {
                                                 onChanged: (newValue) {
                                                   setState(() {
                                                     if (newValue == "Filtros") {
+                                                      categories.clear();
                                                       indexFiltro = 0;
                                                       selectCategory('Todos');
                                                     } else {
                                                       if (newValue ==
                                                           'Pendiente') {
+                                                        categories.clear();
                                                         indexFiltro = 1;
                                                         selectCategory(
                                                             'Pendiente');
                                                       } else {
                                                         if (newValue ==
                                                             'En proceso') {
+                                                          categories.clear();
                                                           indexFiltro = 2;
                                                           selectCategory(
                                                               'En proceso');
                                                         } else {
                                                           if (newValue ==
                                                               'Completado') {
+                                                            categories.clear();
                                                             indexFiltro = 3;
-
                                                             selectCategory(
                                                                 'Completado');
                                                           }
